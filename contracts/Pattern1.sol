@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+//FINAL EDIT
 pragma solidity ^0.8.0;
 
 contract StripePattern {
