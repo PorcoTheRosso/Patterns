@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 contract StripePattern {
+
     struct Stripe {
         uint256 positionX;
         uint256 colorHue;
@@ -35,30 +36,33 @@ contract StripePattern {
 
         for (uint256 i = 0; i < stripes.length; i++) {
             svg = abi.encodePacked(svg, 
-                    '<rect x="', toString(stripes[i].positionX), 
-                    '" y="0" width="', toString(stripeWidth), 
-                    '" height="500" fill="hsl(', toString(stripes[i].colorHue), ', ', 
-                    toString(stripes[i].colorSaturation), 
-                    '%, ', toString(stripes[i].colorBrightness), '%)" />');
+                    '<rect x="', uintToString(stripes[i].positionX), 
+                    '" y="0" width="', uintToString(stripeWidth), 
+                    '" height="500" fill="hsl(', uintToString(stripes[i].colorHue), ', ', 
+                    uintToString(stripes[i].colorSaturation), 
+                    '%, ', uintToString(stripes[i].colorBrightness), '%)" />');
         }
 
         svg = abi.encodePacked(svg, '</svg>');
         return string(svg);
     }
 
-    function toString(uint256 value) internal pure returns(string memory) {
-        // Maximum length of uint256 is 78 digits
-        bytes memory buffer = new bytes(78);
-        uint8 length = 0;
-        while (value != 0) {
-            buffer[length++] = bytes1(uint8(48 + value % 10));
-            value /= 10;
+    function uintToString(uint256 v) internal pure returns (string memory) {
+        if (v == 0) {
+            return "0";
         }
-        // Reverse the string
-        bytes memory result = new bytes(length);
-        for (uint8 i = 0; i < length; i++) {
-            result[i] = buffer[length - 1 - i];
+        uint256 maxlength = 100;
+        bytes memory reversed = new bytes(maxlength);
+        uint256 i = 0;
+        while (v != 0) {
+            uint256 remainder = v % 10;
+            v = v / 10;
+            reversed[i++] = bytes1(uint8(48 + remainder));
         }
-        return string(result);
+        bytes memory s = new bytes(i);
+        for (uint256 j = 0; j < i; j++) {
+            s[j] = reversed[i - j - 1];
+        }
+        return string(s);
     }
 }
