@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract StripePattern {
+contract StripePatternV3 {
 
     string[9] public colors = [
         "#F2CAA8",
