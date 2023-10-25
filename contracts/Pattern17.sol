@@ -13,20 +13,18 @@ contract WigglingTiles {
 
     TileData[61][21] public tiles; // Grid based on ceil(1500/25) x ceil(500/25)
 
-    function generateTiles() public {
-        uint256 seed = uint256(blockhash(block.number - 1)); // Use previous blockhash as seed
-
+    function generateTiles(uint256 tokenId) public {
         for (uint256 x = 0; x < 61; x++) {
             for (uint256 y = 0; y < 21; y++) {
                 TileData memory t;
-                t.red = uint8(pseudoRandom(seed, x, y, 0) % 101 + 100);
-                t.green = uint8(pseudoRandom(seed, x, y, 1) % 101 + 100);
-                t.blue = uint8(pseudoRandom(seed, x, y, 2) % 56 + 200);
+                t.red = uint8(pseudoRandom(tokenId, x, y, 0) % 101 + 100);
+                t.green = uint8(pseudoRandom(tokenId, x, y, 1) % 101 + 100);
+                t.blue = uint8(pseudoRandom(tokenId, x, y, 2) % 56 + 200);
 
-                int256 xOffsetTemp = int256(pseudoRandom(seed, x, y, 3) % 51) - 25;
+                int256 xOffsetTemp = int256(pseudoRandom(tokenId, x, y, 3) % 51) - 25;
                 t.xOffset = int8(xOffsetTemp);
 
-                int256 yOffsetTemp = int256(pseudoRandom(seed, x, y, 4) % 51) - 25;
+                int256 yOffsetTemp = int256(pseudoRandom(tokenId, x, y, 4) % 51) - 25;
                 t.yOffset = int8(yOffsetTemp);
 
                 tiles[x][y] = t;
@@ -38,9 +36,73 @@ contract WigglingTiles {
         return uint256(keccak256(abi.encodePacked(seed, x, y, z))) % 1000;
     }
 
-    // This function retrieves a tile's data by its x and y position in the grid.
     function getTileData(uint256 x, uint256 y) public view returns (TileData memory) {
         require(x < 61 && y < 21, "Coordinates out of bounds");
         return tiles[x][y];
+    }
+
+    function getSvgData() public view returns (string memory) {
+        bytes memory svg = abi.encodePacked('<svg width="1500" height="500" xmlns="http://www.w3.org/2000/svg">');
+
+        for (uint256 y = 0; y < 21; y++) {
+            for (uint256 x = 0; x < 61; x++) {
+                TileData memory t = tiles[x][y];
+                svg = abi.encodePacked(svg, 
+                    '<rect x="', intToString(int256(x * 25) + t.xOffset), 
+                    '" y="', intToString(int256(y * 25) + t.yOffset), 
+                    '" width="25" height="25" fill="rgb(', 
+                    uintToString(t.red), ',', uintToString(t.green), ',', uintToString(t.blue), ')" />');
+            }
+        }
+
+        svg = abi.encodePacked(svg, '</svg>');
+        return string(svg);
+    }
+
+    function uintToString(uint256 v) internal pure returns (string memory) {
+        if (v == 0) {
+            return "0";
+        }
+        uint256 maxlength = 100;
+        bytes memory reversed = new bytes(maxlength);
+        uint256 i = 0;
+        while (v != 0) {
+            uint256 remainder = v % 10;
+            v = v / 10;
+            reversed[i++] = bytes1(uint8(48 + remainder));
+        }
+        bytes memory s = new bytes(i);
+        for (uint256 j = 0; j < i; j++) {
+            s[j] = reversed[i - j - 1];
+        }
+        return string(s);
+    }
+
+    function intToString(int256 v) internal pure returns (string memory) {
+        if (v == 0) {
+            return "0";
+        }
+        bool negative = v < 0;
+        if (negative) {
+            v = -v;
+        }
+        uint256 uv = uint256(v);
+
+        uint256 maxlength = 100;
+        bytes memory reversed = new bytes(maxlength);
+        uint256 i = 0;
+        while (uv != 0) {
+            uint256 remainder = uv % 10;
+            uv = uv / 10;
+            reversed[i++] = bytes1(uint8(48 + remainder));
+        }
+        bytes memory s = new bytes(i + (negative ? 1 : 0));
+        if (negative) {
+            s[0] = '-';
+        }
+        for (uint256 j = 0; j < i; j++) {
+            s[j + (negative ? 1 : 0)] = reversed[i - j - 1];
+        }
+        return string(s);
     }
 }
