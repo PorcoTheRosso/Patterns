@@ -24,7 +24,7 @@ describe("Pattern 2", function () {
       // deploy smart contract with default values
       const { pattern, owner } = await loadFixture(deployPattern);
 
-      const svg = await pattern.getSvgData(1)
+      const svg = await pattern.getSvgData()
       
       // we want the correct SVG
       expect(svg).to.equal(P1_SVG);

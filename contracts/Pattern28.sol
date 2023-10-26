@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import "hardhat/console.sol";
+
 contract TextGrid {
 
     enum CharType { G, M }
@@ -68,6 +70,7 @@ contract TextGrid {
         }
 
         svg = abi.encodePacked(svg, '</svg>');
+        console.log("SVG: %s", string(svg));
         return string(svg);
     }
 

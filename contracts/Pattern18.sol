@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import "hardhat/console.sol";
+
 contract DynamicTiles {
 
     struct TileData {
@@ -11,12 +13,14 @@ contract DynamicTiles {
         int8 yOffset;
     }
 
-    TileData[61][21] public tiles; // Grid based on ceil(1500/25) x ceil(500/25)
+    TileData[21][61] public tiles; // Grid based on ceil(1500/25) x ceil(500/25)
 
     function generateTiles(uint256 tokenId) public {
         uint256 seed = tokenId; // Use tokenId as seed
 
-        for (uint256 x = 0; x < 61; x++) {
+        TileData[21][61] memory tiles;
+
+        for (uint256 x = 0; x < 62; x++) {
             for (uint256 y = 0; y < 21; y++) {
                 TileData memory t;
                 t.red = uint8(pseudoRandom(seed, x, y, 0) % 156 + 100);
@@ -30,6 +34,9 @@ contract DynamicTiles {
                 t.yOffset = int8(yOffsetTemp);
 
                 tiles[x][y] = t;
+
+                // console.log("%s/%s", x, y);
+                // console.log("   (%s, %s, %s)", t.red, t.green, t.blue);
             }
         }
     }
