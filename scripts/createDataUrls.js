@@ -6,12 +6,19 @@
 // global scope, and execute the script.
 const hre = require("hardhat");
 
-async function main() {
-  const pattern = await hre.ethers.deployContract("StripePattern");
+async function deployAndCreate(patternName, tokenId) {
+  const pattern = await hre.ethers.deployContract(patternName);
 
   await pattern.waitForDeployment();
 
-  console.log(`pattern deployed to ${pattern.target}`);
+  const dataUrl = await pattern.getDataUrl(tokenId)
+  return dataUrl
+}
+
+async function main() {
+
+  const p1Url = await deployAndCreate("StripePatternV1a", 1)
+  console.log(p1Url)
 }
 
 // We recommend this pattern to be able to use async/await everywhere
