@@ -10,54 +10,62 @@ contract FineGradientDiagonalPattern {
 
     DiagonalData[75][25] public diagonals; // Grid of 75x25 cells (based on 20 pixel steps)
 
-    function generatePattern(uint256 tokenId) public {
+function generatePattern(uint256 tokenId) public {
+    DiagonalData[75][25] memory pattern = randomizePattern(tokenId);        
+    for (uint256 x = 0; x < 75; x++) {
+        for (uint256 y = 0; y < 25; y++) {
+            diagonals[x][y] = pattern[y][x];
+        }
+    }
+}
+
+    function randomizePattern(uint256 tokenId) internal pure returns (DiagonalData[75][25] memory) {
+        DiagonalData[75][25] memory pattern;
         for (uint256 x = 0; x < 75; x++) {
             for (uint256 y = 0; y < 25; y++) {
                 DiagonalData memory d;
                 d.direction = (pseudoRandom(tokenId, x, y) > 500);
-                d.redValue = uint8((x * 255) / 74);  // Linearly scale x to [0, 255]
-                diagonals[x][y] = d;
+                d.redValue = uint8((x * 255) / 74);  
+                pattern[y][x] = d;
             }
         }
+        return pattern;
     }
 
     function pseudoRandom(uint256 seed, uint256 x, uint256 y) internal pure returns (uint256) {
         return uint256(keccak256(abi.encodePacked(seed, x, y))) % 1000;
     }
 
-    function getDiagonalData(uint256 x, uint256 y) public view returns (DiagonalData memory) {
-        require(x < 75 && y < 25, "Coordinates out of bounds");
-        return diagonals[x][y];
-    }
-
-    function getSvgData() public view returns (string memory) {
-        bytes memory svg = abi.encodePacked('<svg width="1500" height="500" xmlns="http://www.w3.org/2000/svg">');
-
-        for (uint256 y = 0; y < 25; y++) {
-            for (uint256 x = 0; x < 75; x++) {
-                if (diagonals[x][y].direction) {
-                    // Diagonal from top-left to bottom-right
-                    svg = abi.encodePacked(svg, 
-                        '<line x1="', uintToString(x * 20), 
-                        '" y1="', uintToString(y * 20), 
-                        '" x2="', uintToString((x + 1) * 20), 
-                        '" y2="', uintToString((y + 1) * 20), 
-                        '" style="stroke:rgb(', uintToString(diagonals[x][y].redValue), ',0,0);stroke-width:2" />');
-                } else {
-                    // Diagonal from bottom-left to top-right
-                    svg = abi.encodePacked(svg, 
-                        '<line x1="', uintToString(x * 20), 
-                        '" y1="', uintToString((y + 1) * 20), 
-                        '" x2="', uintToString((x + 1) * 20), 
-                        '" y2="', uintToString(y * 20), 
-                        '" style="stroke:rgb(', uintToString(diagonals[x][y].redValue), ',0,0);stroke-width:2" />');
-                }
+function getSvgData(uint256 tokenId) public returns (string memory) {
+    generatePattern(tokenId);
+    
+    bytes memory svg = abi.encodePacked('<svg width="1500" height="500" xmlns="http://www.w3.org/2000/svg">');
+    for (uint256 y = 0; y < 25; y++) {
+        for (uint256 x = 0; x < 75; x++) {
+            if (diagonals[x][y].direction) {
+                // Diagonal from top-left to bottom-right
+                svg = abi.encodePacked(svg, 
+                    '<line x1="', uintToString(x * 20), 
+                    '" y1="', uintToString(y * 20), 
+                    '" x2="', uintToString((x + 1) * 20), 
+                    '" y2="', uintToString((y + 1) * 20), 
+                    '" style="stroke:rgb(', uintToString(diagonals[x][y].redValue), ',0,0);stroke-width:2" />');
+            } else {
+                // Diagonal from bottom-left to top-right
+                svg = abi.encodePacked(svg, 
+                    '<line x1="', uintToString(x * 20), 
+                    '" y1="', uintToString((y + 1) * 20), 
+                    '" x2="', uintToString((x + 1) * 20), 
+                    '" y2="', uintToString(y * 20), 
+                    '" style="stroke:rgb(', uintToString(diagonals[x][y].redValue), ',0,0);stroke-width:2" />');
             }
         }
-
-        svg = abi.encodePacked(svg, '</svg>');
-        return string(svg);
     }
+    svg = abi.encodePacked(svg, '</svg>');
+    return string(svg);
+}
+
+
 
     function uintToString(uint256 v) internal pure returns (string memory) {
         if (v == 0) {

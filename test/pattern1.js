@@ -57,7 +57,7 @@ describe("Pattern 1", function () {
       await p1.randomizePattern(1);
 
       const svg = await p1.getSvgData()
-      
+      //console.log(svg);  // This will log the actual SVG output to the console
       // we want the correct SVG
       expect(svg).to.equal(P1_SVG);
     });

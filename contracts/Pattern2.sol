@@ -12,13 +12,12 @@ contract StripePatternV2 {
 
     Stripe[20] public stripes;
 
-    // This function randomizes the pattern based on the given tokenId.
     function randomizePattern(uint256 tokenId) internal pure returns (Stripe[20] memory) {
         uint256 random = uint256(keccak256(abi.encodePacked(tokenId)));
         Stripe[20] memory randomizedStripes;
         
         for (uint256 i = 0; i < 20; i++) {
-            randomizedStripes[i].positionX = (random / (i + 1)) % 1500;
+            randomizedStripes[i].positionX = (random / (i + 1)) % 500;  // Changed modulus to 500
             randomizedStripes[i].colorHue = (random / (i + 1)) % 360;
             randomizedStripes[i].colorSaturation = 50 + (random / (i + 1)) % 50;
             randomizedStripes[i].colorBrightness = 50 + (random / (i + 1)) % 50;
@@ -27,7 +26,6 @@ contract StripePatternV2 {
         return randomizedStripes;
     }
 
-    // This function initializes the pattern based on a given tokenId.
     function generatePattern(uint256 tokenId) public {
         Stripe[20] memory randomizedStripes = randomizePattern(tokenId);
         
@@ -36,22 +34,20 @@ contract StripePatternV2 {
         }
     }
 
-    // This function retrieves a stripe's data by its index.
     function getStripe(uint256 index) public view returns (Stripe memory) {
         require(index < 20, "Index out of bounds");
         return stripes[index];
     }
 
-    // This function generates an SVG representation of the stripes.
     function getSvgData() public view returns (string memory) {
-        uint256 stripeWidth = 1500 / 20;
-        bytes memory svg = abi.encodePacked('<svg width="1500" height="1500" xmlns="http://www.w3.org/2000/svg">');
+        uint256 stripeWidth = 500 / 20;  // Changed stripe width calculation
+        bytes memory svg = abi.encodePacked('<svg width="500" height="500" xmlns="http://www.w3.org/2000/svg">');  // Changed SVG dimensions to 500
 
         for (uint256 i = 0; i < 20; i++) {
             svg = abi.encodePacked(svg, 
                     '<rect x="', uintToString(stripes[i].positionX), 
                     '" y="0" width="', uintToString(stripeWidth), 
-                    '" height="1500" fill="hsl(', uintToString(stripes[i].colorHue), ', ', 
+                    '" height="500" fill="hsl(', uintToString(stripes[i].colorHue), ', ', 
                     uintToString(stripes[i].colorSaturation), 
                     '%, ', uintToString(stripes[i].colorBrightness), '%)" />');
         }
@@ -60,7 +56,6 @@ contract StripePatternV2 {
         return string(svg);
     }
 
-    // Utility function to convert uint256 to string for SVG generation.
     function uintToString(uint256 v) internal pure returns (string memory) {
         if (v == 0) {
             return "0";

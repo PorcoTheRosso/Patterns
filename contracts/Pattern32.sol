@@ -11,44 +11,46 @@ contract PatternCanvas {
 
     Element[25][25] public canvas;
 
-    function generatePattern(uint256 tokenId) public {
-        uint256 seed = tokenId; // Use tokenId as seed for randomization
+function generatePattern(uint256 tokenId) public pure returns (Element[25][25] memory) {
+    uint256 seed = tokenId; 
+    Element[25][25] memory localCanvas;
 
-        // Initialize canvas
-        for (uint256 x = 0; x < 25; x++) {
-            for (uint256 y = 0; y < 25; y++) {
-                uint256 randValue = pseudoRandom(seed, x, y) % 5;
-                canvas[x][y] = Element(ElementType(randValue));
-            }
+    for (uint256 x = 0; x < 25; x++) {
+        for (uint256 y = 0; y < 25; y++) {
+            uint256 randValue = pseudoRandom(seed, x, y) % 5;
+            localCanvas[x][y] = Element(ElementType(randValue));
         }
     }
+    return localCanvas;
+}
 
     function pseudoRandom(uint256 seed, uint256 x, uint256 y) internal pure returns (uint256) {
         return uint256(keccak256(abi.encodePacked(seed, x, y))) % 1000;
     }
 
-    function getSvgData(uint256 tokenId) public returns (string memory) {
-        generatePattern(tokenId); // Generate pattern based on tokenId
+function getSvgData(uint256 tokenId) public pure returns (string memory) {
+    Element[25][25] memory localCanvas = generatePattern(tokenId);
 
-        bytes memory svg = abi.encodePacked('<svg width="500" height="500" xmlns="http://www.w3.org/2000/svg">');
+    bytes memory svg = abi.encodePacked('<svg width="500" height="500" xmlns="http://www.w3.org/2000/svg">');
 
-        for (uint256 y = 0; y < 25; y++) {
-            for (uint256 x = 0; x < 25; x++) {
-                if (canvas[x][y].elementType == ElementType.RECT) {
-                    svg = abi.encodePacked(svg, '<rect x="', uintToString(x * 20), '" y="', uintToString(y * 20), '" width="20" height="20" fill="black" />');
-                } else if (canvas[x][y].elementType == ElementType.DIAGLINE) {
-                    svg = abi.encodePacked(svg, '<line x1="', uintToString(x * 20), '" y1="', uintToString(y * 20), '" x2="', uintToString((x + 1) * 20), '" y2="', uintToString((y + 1) * 20), '" stroke="black" />');
-                } else if (canvas[x][y].elementType == ElementType.VERTLINE) {
-                    svg = abi.encodePacked(svg, '<line x1="', uintToString(x * 20), '" y1="', uintToString(y * 20), '" x2="', uintToString(x * 20), '" y2="', uintToString((y + 1) * 20), '" stroke="black" />');
-                } else if (canvas[x][y].elementType == ElementType.HORILINE) {
-                    svg = abi.encodePacked(svg, '<line x1="', uintToString(x * 20), '" y1="', uintToString(y * 20), '" x2="', uintToString((x + 1) * 20), '" y2="', uintToString(y * 20), '" stroke="black" />');
-                }
+    for (uint256 y = 0; y < 25; y++) {
+        for (uint256 x = 0; x < 25; x++) {
+            if (localCanvas[x][y].elementType == ElementType.RECT) {
+                svg = abi.encodePacked(svg, '<rect x="', uintToString(x * 20), '" y="', uintToString(y * 20), '" width="20" height="20" fill="black" />');
+            } else if (localCanvas[x][y].elementType == ElementType.DIAGLINE) {
+                svg = abi.encodePacked(svg, '<line x1="', uintToString(x * 20), '" y1="', uintToString(y * 20), '" x2="', uintToString((x + 1) * 20), '" y2="', uintToString((y + 1) * 20), '" stroke="black" />');
+            } else if (localCanvas[x][y].elementType == ElementType.VERTLINE) {
+                svg = abi.encodePacked(svg, '<line x1="', uintToString(x * 20), '" y1="', uintToString(y * 20), '" x2="', uintToString(x * 20), '" y2="', uintToString((y + 1) * 20), '" stroke="black" />');
+            } else if (localCanvas[x][y].elementType == ElementType.HORILINE) {
+                svg = abi.encodePacked(svg, '<line x1="', uintToString(x * 20), '" y1="', uintToString(y * 20), '" x2="', uintToString((x + 1) * 20), '" y2="', uintToString(y * 20), '" stroke="black" />');
             }
         }
-
-        svg = abi.encodePacked(svg, '</svg>');
-        return string(svg);
     }
+
+    svg = abi.encodePacked(svg, '</svg>');
+    return string(svg);
+}
+
 
     function uintToString(uint256 v) internal pure returns (string memory) {
         if (v == 0) {

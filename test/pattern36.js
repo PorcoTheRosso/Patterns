@@ -24,8 +24,8 @@ describe("Pattern 36", function () {
       // deploy smart contract with default values
       const { pattern, owner } = await loadFixture(deployPattern);
 
-      const svg = await pattern.getSvgData(1)
-      
+      const svg = await pattern.getSvgData(1, { gasLimit: 3000000 })
+      console.log(svg);  // This will log the actual SVG output to the console
       // we want the correct SVG
       expect(svg).to.equal(P1_SVG);
     });

@@ -1,21 +1,32 @@
-// We require the Hardhat Runtime Environment explicitly here. This is optional
-// but useful for running the script in a standalone fashion through `node <script>`.
-//
-// You can also run a script with `npx hardhat run <script>`. If you do that, Hardhat
-// will compile your contracts, add the Hardhat Runtime Environment's members to the
-// global scope, and execute the script.
 const hre = require("hardhat");
 
 async function main() {
-  const pattern = await hre.ethers.deployContract("StripePattern");
+  const [deployer] = await hre.ethers.getSigners();
+  console.log("Deploying contracts with the account:", deployer.address);
 
-  await pattern.waitForDeployment();
+  // List all the pattern contract names
+  const patternNames = [
+    "StripePatternV1",
+    "StripePatternV1a",
+    "StripePatternV2",
+    "GradientPattern",
+    "DiagonalPattern",
+    "GradientDiagonalPattern",
+    "FineGradientDiagonalPattern",
+    "CyanDiagonalPattern",
+    "GradientRectPattern",
+    // ... Add all other pattern names here
+  ];
 
-  console.log(`pattern deployed to ${pattern.target}`);
+  for (const patternName of patternNames) {
+    const Pattern = await hre.ethers.getContractFactory(patternName);
+    const pattern = await Pattern.deploy();
+    await pattern.deployed();
+
+    console.log(`${patternName} deployed to ${pattern.address}`);
+  }
 }
 
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
 main().catch((error) => {
   console.error(error);
   process.exitCode = 1;

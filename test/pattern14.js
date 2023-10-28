@@ -25,7 +25,7 @@ describe("Pattern 14", function () {
       const { pattern, owner } = await loadFixture(deployPattern);
 
       const svg = await pattern.getSvgData(1)
-      
+      console.log(svg);  // This will log the actual SVG output to the console
       // we want the correct SVG
       expect(svg).to.equal(P1_SVG);
     });

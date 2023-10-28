@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract DiagonalPattern {
+contract DiagonalPattern2 {
 
     enum LineType { NONE, FORWARD, BACKWARD }
 
@@ -51,14 +51,44 @@ contract DiagonalPattern {
         return uint256(keccak256(abi.encodePacked(seed, x, y, z))) % 1000;
     }
 
-    function getSvgData(uint256 tokenId) public returns (string memory) {
-        generatePattern(tokenId);
 
-        bytes memory svg = abi.encodePacked('<svg width="500" height="500" xmlns="http://www.w3.org/2000/svg">');
+mapping(uint256 => Line[50][50]) public patterns;
 
-        for (uint256 i = 0; i < 50; i++) {
-            for (uint256 j = 0; j < 50; j++) {
-                if (canvas[i][j].lineType == LineType.FORWARD) {
+function generatePatternBatch(uint256 tokenId, uint256 startX, uint256 endX) public {
+    require(endX > startX && endX <= 50, "Invalid range");
+
+    uint256 seed = tokenId;
+    uint256 x = startX; 
+    uint256 y = 25;
+
+    while (y < 50 && x < endX) {
+        uint8 colorIndex = uint8(pseudoRandom(seed, x, y, 0) % 5);
+        bool lineDirection = pseudoRandom(seed, x, y, 1) < 500;
+
+        Line memory line;
+        line.colorIndex = colorIndex;
+        if (lineDirection) {
+            line.lineType = LineType.FORWARD;
+        } else {
+            line.lineType = LineType.BACKWARD;
+        }
+        patterns[tokenId][x][y] = line;
+
+        x += 1;
+        if (x >= endX) {
+            x = startX;
+            y += 1;
+        }
+    }
+}
+
+function getSvgData(uint256 tokenId) public view returns (string memory) {
+    bytes memory svg = abi.encodePacked('<svg width="500" height="500" xmlns="http://www.w3.org/2000/svg">');
+
+    for (uint256 i = 0; i < 50; i++) {
+        for (uint256 j = 0; j < 50; j++) {
+            // Use patterns[tokenId][i][j] instead of canvas[i][j]
+            if (patterns[tokenId][i][j].lineType == LineType.FORWARD) {
                     svg = abi.encodePacked(
                         svg,
                         '<line x1="',
@@ -73,7 +103,7 @@ contract DiagonalPattern {
                         pastelColors[canvas[i][j].colorIndex],
                         '" />'
                     );
-                } else if (canvas[i][j].lineType == LineType.BACKWARD) {
+                } else if (patterns[tokenId][i][j].lineType == LineType.BACKWARD) {
                     svg = abi.encodePacked(
                         svg,
                         '<line x1="',

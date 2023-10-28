@@ -15,8 +15,8 @@ contract GradientDiagonalPattern {
             for (uint256 y = 0; y < 10; y++) {
                 DiagonalData memory d;
                 d.direction = (pseudoRandom(tokenId, x, y) > 500);
-                d.redValue = uint8((x * 255) / 29);  // Linearly scale x to [0, 255]
-                diagonals[x][y] = d;
+                d.redValue = uint8((x * 255) / 29);
+                diagonals[y][x] = d;
             }
         }
     }
@@ -27,7 +27,7 @@ contract GradientDiagonalPattern {
 
     function getDiagonalData(uint256 x, uint256 y) public view returns (DiagonalData memory) {
         require(x < 30 && y < 10, "Coordinates out of bounds");
-        return diagonals[x][y];
+        return diagonals[y][x];
     }
 
     function getSvgData() public view returns (string memory) {
@@ -35,14 +35,14 @@ contract GradientDiagonalPattern {
 
         for (uint256 y = 0; y < 10; y++) {
             for (uint256 x = 0; x < 30; x++) {
-                if (diagonals[x][y].direction) {
+                if (diagonals[y][x].direction) {
                     // Diagonal from top-left to bottom-right
                     svg = abi.encodePacked(svg, 
                         '<line x1="', uintToString(x * 50), 
                         '" y1="', uintToString(y * 50), 
                         '" x2="', uintToString((x + 1) * 50), 
                         '" y2="', uintToString((y + 1) * 50), 
-                        '" style="stroke:rgb(', uintToString(diagonals[x][y].redValue), ',0,0);stroke-width:2" />');
+                        '" style="stroke:rgb(', uintToString(diagonals[y][x].redValue), ',0,0);stroke-width:2" />');
                 } else {
                     // Diagonal from bottom-left to top-right
                     svg = abi.encodePacked(svg, 
@@ -50,7 +50,7 @@ contract GradientDiagonalPattern {
                         '" y1="', uintToString((y + 1) * 50), 
                         '" x2="', uintToString((x + 1) * 50), 
                         '" y2="', uintToString(y * 50), 
-                        '" style="stroke:rgb(', uintToString(diagonals[x][y].redValue), ',0,0);stroke-width:2" />');
+                        '" style="stroke:rgb(', uintToString(diagonals[y][x].redValue), ',0,0);stroke-width:2" />');
                 }
             }
         }

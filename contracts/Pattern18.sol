@@ -13,16 +13,16 @@ contract DynamicTiles {
         int8 yOffset;
     }
 
-    TileData[21][61] public tiles; // Grid based on ceil(1500/25) x ceil(500/25)
+     TileData[21][61] public tiles; // Adjusted the dimensions
 
-    function generateTiles(uint256 tokenId) public {
-        uint256 seed = tokenId; // Use tokenId as seed
+function generateTiles(uint256 tokenId) public pure returns (TileData[21][61] memory generatedTiles) {
+    uint256 seed = tokenId;
 
-        TileData[21][61] memory tiles;
+    TileData[21][61] memory localTiles;
 
-        for (uint256 x = 0; x < 62; x++) {
-            for (uint256 y = 0; y < 21; y++) {
-                TileData memory t;
+    for (uint256 y = 0; y < 21; y++) {
+        for (uint256 x = 0; x < 61; x++) {
+            TileData memory t;
                 t.red = uint8(pseudoRandom(seed, x, y, 0) % 156 + 100);
                 t.green = uint8(pseudoRandom(seed, x, y, 1) % 156 + 100);
                 t.blue = uint8(pseudoRandom(seed, x, y, 2) % 156 + 100);
@@ -32,13 +32,17 @@ contract DynamicTiles {
 
                 int256 yOffsetTemp = int256(pseudoRandom(seed, x, y, 4) % 51) - 25;
                 t.yOffset = int8(yOffsetTemp);
-
-                tiles[x][y] = t;
-
-                // console.log("%s/%s", x, y);
-                // console.log("   (%s, %s, %s)", t.red, t.green, t.blue);
+                
+                console.log("%s/%s", x, y);
+                
+                 console.log("   (%s, %s, %s)", t.red, t.green, t.blue);
+                
+                localTiles[y][x] = t;
+                
+                 
             }
         }
+        generatedTiles = localTiles;
     }
 
     function pseudoRandom(uint256 seed, uint256 x, uint256 y, uint256 z) internal pure returns (uint256) {
@@ -47,17 +51,17 @@ contract DynamicTiles {
 
     function getTileData(uint256 x, uint256 y) public view returns (TileData memory) {
         require(x < 61 && y < 21, "Coordinates out of bounds");
-        return tiles[x][y];
+        return tiles[y][x];
     }
 
-    function getSvgData(uint256 tokenId) public returns (string memory) {
-        generateTiles(tokenId); // Generate tiles based on tokenId
+function getSvgData(uint256 tokenId) public pure returns (string memory) {
+    TileData[21][61] memory localTiles = generateTiles(tokenId);
 
-        bytes memory svg = abi.encodePacked('<svg width="1500" height="500" xmlns="http://www.w3.org/2000/svg">');
+    bytes memory svg = abi.encodePacked('<svg width="1500" height="500" xmlns="http://www.w3.org/2000/svg">');
 
-        for (uint256 y = 0; y < 21; y++) {
-            for (uint256 x = 0; x < 61; x++) {
-                TileData memory t = tiles[x][y];
+    for (uint256 y = 0; y < 21; y++) {
+        for (uint256 x = 0; x < 61; x++) {
+            TileData memory t = localTiles[y][x];
                 svg = abi.encodePacked(svg, 
                     '<rect x="', intToString(int256(x * 25) + t.xOffset), 
                     '" y="', intToString(int256(y * 25) + t.yOffset), 

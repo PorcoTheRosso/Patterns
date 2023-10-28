@@ -39,9 +39,7 @@ contract StripePatternV3 {
         return uint256(keccak256(abi.encodePacked(seed, x, y))) % 1000;
     }
 
-    function getSvgData(uint256 tokenId) public returns (string memory) {
-        generatePattern(tokenId);
-
+    function getSvgData() public view returns (string memory) {
         bytes memory svg = abi.encodePacked('<svg width="500" height="500" xmlns="http://www.w3.org/2000/svg" style="background-color:', colors[0], ';">');
 
         for (uint256 i = 0; i < 100; i++) {

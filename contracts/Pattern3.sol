@@ -9,15 +9,15 @@ contract GradientPattern {
         uint256 blue;
     }
 
-    Color[150][50] public colors; // Grid of 150x50 cells
+    Color[10][10] public colors; // Grid of 10x10 cells
 
     // This function randomizes the pattern based on the given tokenId.
-    function randomizePattern(uint256 tokenId) internal pure returns (Color[150][50] memory) {
+    function randomizePattern(uint256 tokenId) internal pure returns (Color[10][10] memory) {
         uint256 random = uint256(keccak256(abi.encodePacked(tokenId)));
-        Color[150][50] memory randomizedColors;
+        Color[10][10] memory randomizedColors;
 
-        for (uint256 y = 0; y < 50; y++) {
-            for (uint256 x = 0; x < 150; x++) {
+        for (uint256 y = 0; y < 10; y++) {
+            for (uint256 x = 0; x < 10; x++) {
                 randomizedColors[x][y].red = (random / (x + y + 1)) % 256;
                 randomizedColors[x][y].green = (random / (x + y + 2)) % 256;
                 randomizedColors[x][y].blue = (random / (x + y + 3)) % 256;
@@ -29,10 +29,10 @@ contract GradientPattern {
 
     // This function initializes the pattern based on a given tokenId.
     function generatePattern(uint256 tokenId) public {
-        Color[150][50] memory randomizedColors = randomizePattern(tokenId);
+        Color[10][10] memory randomizedColors = randomizePattern(tokenId);
 
-        for (uint256 y = 0; y < 50; y++) {
-            for (uint256 x = 0; x < 150; x++) {
+        for (uint256 y = 0; y < 10; y++) {
+            for (uint256 x = 0; x < 10; x++) {
                 colors[x][y] = randomizedColors[x][y];
             }
         }
@@ -43,21 +43,22 @@ contract GradientPattern {
         return colors[x][y];
     }
 
-    function getSvgData() public view returns (string memory) {
-        bytes memory svg = abi.encodePacked('<svg width="1500" height="500" xmlns="http://www.w3.org/2000/svg">');
+function getSvgData() public view returns (string memory) {
+    bytes memory svg = abi.encodePacked('<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">');
 
-        for (uint256 y = 0; y < 50; y++) {
-            for (uint256 x = 0; x < 150; x++) {
-                svg = abi.encodePacked(svg, 
-                    '<rect x="', uintToString(x * 10), 
-                    '" y="', uintToString(y * 10),
-                    '" width="10" height="10" fill="', colorToSvgFill(colors[x][y]), '" />');
-            }
+    for (uint256 y = 0; y < 10; y++) {
+        for (uint256 x = 0; x < 10; x++) {
+            svg = abi.encodePacked(svg, 
+                '<rect x="', uintToString(x * 10), 
+                '" y="', uintToString(y * 10),
+                '" width="10" height="10" fill="', colorToSvgFill(colors[x][y]), '" />');
         }
-
-        svg = abi.encodePacked(svg, '</svg>');
-        return string(svg);
     }
+
+    svg = abi.encodePacked(svg, '</svg>');
+    return string(svg);
+}
+
 
     function colorToSvgFill(Color memory color) internal pure returns (string memory) {
         return string(abi.encodePacked("rgb(", uintToString(color.red), ",", uintToString(color.green), ",", uintToString(color.blue), ")"));

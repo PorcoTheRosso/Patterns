@@ -5,15 +5,15 @@ contract DiagonalPattern {
 
     // true represents diagonal from top-left to bottom-right.
     // false represents diagonal from bottom-left to top-right.
-    bool[30][10] public diagonals; // Grid of 30x10 cells (based on 50 pixel steps)
+    mapping(uint256 => bool[30][10]) public tokenDiagonals;
 
     function generatePattern(uint256 tokenId) public {
         for (uint256 x = 0; x < 30; x++) {
             for (uint256 y = 0; y < 10; y++) {
                 if (pseudoRandom(tokenId, x, y) > 500) {
-                    diagonals[x][y] = true;
+                    tokenDiagonals[tokenId][x][y] = true;
                 } else {
-                    diagonals[x][y] = false;
+                    tokenDiagonals[tokenId][x][y] = false;
                 }
             }
         }
@@ -23,17 +23,19 @@ contract DiagonalPattern {
         return uint256(keccak256(abi.encodePacked(seed, x, y))) % 1000;
     }
 
-    function getDiagonalDirection(uint256 x, uint256 y) public view returns (bool) {
+    function getDiagonalDirection(uint256 tokenId, uint256 x, uint256 y) public view returns (bool) {
         require(x < 30 && y < 10, "Coordinates out of bounds");
-        return diagonals[x][y];
+        return tokenDiagonals[tokenId][x][y];
     }
 
-    function getSvgData() public view returns (string memory) {
+    function getSvgData(uint256 tokenId) public view returns (string memory) {
+        require(tokenDiagonals[tokenId][0][0] == true || tokenDiagonals[tokenId][0][0] == false, "Pattern not generated for this tokenId");
+
         bytes memory svg = abi.encodePacked('<svg width="1500" height="500" xmlns="http://www.w3.org/2000/svg">');
 
         for (uint256 y = 0; y < 10; y++) {
             for (uint256 x = 0; x < 30; x++) {
-                if (diagonals[x][y]) {
+                if (tokenDiagonals[tokenId][x][y]) {
                     // Diagonal from top-left to bottom-right
                     svg = abi.encodePacked(svg, 
                         '<line x1="', uintToString(x * 50), 

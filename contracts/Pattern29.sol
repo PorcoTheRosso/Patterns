@@ -14,19 +14,21 @@ contract GMGrid {
 
     string[5] public gmColors = ["#FEBFCA", "#D7EBEE", "#F8DCC1", "#C5E99B", "#E8D8EC"];
 
-    function generateGrid(uint256 tokenId) public {
-        uint256 seed = tokenId; // Use tokenId as seed for randomization
+ function generateGrid(uint256 tokenId) public pure returns (CellData[15][15] memory) {
+    uint256 seed = tokenId; // Use tokenId as seed for randomization
+    CellData[15][15] memory localGrid;
 
-        for (uint256 x = 0; x < 15; x++) {
-            for (uint256 y = 0; y < 15; y++) {
-                CellData memory cell;
-                uint256 randChar = pseudoRandom(seed, x, y, 0) % 2;
-                cell.charType = CharType(randChar);
-                cell.colorIndex = uint8(pseudoRandom(seed, x, y, 1) % 5); // There are 5 colors
-                grid[x][y] = cell;
-            }
+    for (uint256 x = 0; x < 15; x++) {
+        for (uint256 y = 0; y < 15; y++) {
+            CellData memory cell;
+            uint256 randChar = pseudoRandom(seed, x, y, 0) % 2;
+            cell.charType = CharType(randChar);
+            cell.colorIndex = uint8(pseudoRandom(seed, x, y, 1) % 5); // There are 5 colors
+            localGrid[x][y] = cell;
         }
     }
+    return localGrid;
+}
 
     function pseudoRandom(uint256 seed, uint256 x, uint256 y, uint256 z) internal pure returns (uint256) {
         return uint256(keccak256(abi.encodePacked(seed, x, y, z))) % 1000;
@@ -37,14 +39,13 @@ contract GMGrid {
         return grid[x][y];
     }
 
-    function getSvgData(uint256 tokenId) public returns (string memory) {
-        generateGrid(tokenId); // Generate grid based on tokenId
-
-        bytes memory svg = abi.encodePacked('<svg width="600" height="600" xmlns="http://www.w3.org/2000/svg">');
+function getSvgData(uint256 tokenId) public view returns (string memory) {
+    CellData[15][15] memory localGrid = generateGrid(tokenId);
+    bytes memory svg = abi.encodePacked('<svg width="600" height="600" xmlns="http://www.w3.org/2000/svg">');
 
         for (uint256 y = 0; y < 15; y++) {
             for (uint256 x = 0; x < 15; x++) {
-                CellData memory cell = grid[x][y];
+                CellData memory cell = localGrid[x][y];
                 svg = abi.encodePacked(svg, 
                     '<rect x="', uintToString(x * 40), 
                     '" y="', uintToString(y * 40), 

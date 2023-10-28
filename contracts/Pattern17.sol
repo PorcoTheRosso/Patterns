@@ -11,9 +11,9 @@ contract WigglingTiles {
         int8 yOffset;
     }
 
-    TileData[61][21] public tiles; // Grid based on ceil(1500/25) x ceil(500/25)
+    function getSvgData(uint256 tokenId) public pure returns (string memory) {
+        TileData[61][21] memory localTiles;
 
-    function generateTiles(uint256 tokenId) public {
         for (uint256 x = 0; x < 61; x++) {
             for (uint256 y = 0; y < 21; y++) {
                 TileData memory t;
@@ -27,26 +27,15 @@ contract WigglingTiles {
                 int256 yOffsetTemp = int256(pseudoRandom(tokenId, x, y, 4) % 51) - 25;
                 t.yOffset = int8(yOffsetTemp);
 
-                tiles[x][y] = t;
+                localTiles[x][y] = t;
             }
         }
-    }
 
-    function pseudoRandom(uint256 seed, uint256 x, uint256 y, uint256 z) internal pure returns (uint256) {
-        return uint256(keccak256(abi.encodePacked(seed, x, y, z))) % 1000;
-    }
-
-    function getTileData(uint256 x, uint256 y) public view returns (TileData memory) {
-        require(x < 61 && y < 21, "Coordinates out of bounds");
-        return tiles[x][y];
-    }
-
-    function getSvgData() public view returns (string memory) {
         bytes memory svg = abi.encodePacked('<svg width="1500" height="500" xmlns="http://www.w3.org/2000/svg">');
 
         for (uint256 y = 0; y < 21; y++) {
             for (uint256 x = 0; x < 61; x++) {
-                TileData memory t = tiles[x][y];
+                TileData memory t = localTiles[x][y];
                 svg = abi.encodePacked(svg, 
                     '<rect x="', intToString(int256(x * 25) + t.xOffset), 
                     '" y="', intToString(int256(y * 25) + t.yOffset), 
@@ -57,6 +46,10 @@ contract WigglingTiles {
 
         svg = abi.encodePacked(svg, '</svg>');
         return string(svg);
+    }
+
+    function pseudoRandom(uint256 seed, uint256 x, uint256 y, uint256 z) internal pure returns (uint256) {
+        return uint256(keccak256(abi.encodePacked(seed, x, y, z))) % 1000;
     }
 
     function uintToString(uint256 v) internal pure returns (string memory) {

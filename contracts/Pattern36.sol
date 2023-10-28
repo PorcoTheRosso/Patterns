@@ -39,20 +39,41 @@ contract GradientTiles {
         return gradient[index % numTilesX];
     }
 
-    function createGradient(Color memory startColor, Color memory endColor, uint256 numSteps) internal pure returns (Color[] memory) {
-        Color[] memory newGradient = new Color[](numSteps);
+function createGradient(Color memory startColor, Color memory endColor, uint256 numSteps) internal pure returns (Color[] memory) {
+    require(numSteps > 0, "Number of steps should be greater than 0");
+    Color[] memory newGradient = new Color[](numSteps);
 
-        for (uint256 i = 0; i < numSteps; i++) {
-            Color memory c;
-            c.red = uint8(startColor.red + (endColor.red - startColor.red) * i / (numSteps - 1));
-            c.green = uint8(startColor.green + (endColor.green - startColor.green) * i / (numSteps - 1));
-            c.blue = uint8(startColor.blue + (endColor.blue - startColor.blue) * i / (numSteps - 1));
+    for (uint256 i = 0; i < numSteps; i++) {
+        Color memory c;
 
-            newGradient[i] = c;
-        }
+        int256 diffRed = int256(uint256(endColor.red)) - int256(uint256(startColor.red));
+        int256 diffGreen = int256(uint256(endColor.green)) - int256(uint256(startColor.green));
+        int256 diffBlue = int256(uint256(endColor.blue)) - int256(uint256(startColor.blue));
 
-        return newGradient;
+        int256 redValue = int256(uint256(startColor.red)) + (diffRed * int256(i) / int256(numSteps - 1));
+        int256 greenValue = int256(uint256(startColor.green)) + (diffGreen * int256(i) / int256(numSteps - 1));
+        int256 blueValue = int256(uint256(startColor.blue)) + (diffBlue * int256(i) / int256(numSteps - 1));
+
+
+        c.red = castColor(redValue);
+        c.green = castColor(greenValue);
+        c.blue = castColor(blueValue);
+
+        newGradient[i] = c;
     }
+
+    return newGradient;
+}
+
+
+function castColor(int256 value) internal pure returns (uint8) {
+    if (value < 0) return 0;
+    if (value > 255) return 255;
+    return uint8(uint256(value));
+}
+
+
+
 
     function getSvgData(uint256 tokenId) public returns (string memory) {
         generateGradient(tokenId);
